@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common'; 
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, Input, NO_ERRORS_SCHEMA, TemplateRef } from '@angular/core';
+import { Component, inject, Input, Injector, TemplateRef } from '@angular/core';
 import { WidgetActions } from '../widget-actions.service';
 import { WidgetState } from '../widget-state.service';
 
@@ -17,12 +17,26 @@ import { WidgetState } from '../widget-state.service';
       </ng-template>
     </div>
     <div class="widget-content">
-      <div class="sky-condition">{{ state.data.skyCondition === 'sunny' ? '☀️' : '☁️' }}</div>
-      <div class="temperature">{{state.data.temperature}}°C</div>
+      <ng-container 
+        [ngTemplateOutletContext]="{ $implicit: state.data }"
+        [ngTemplateOutlet]="contentTemplate || defaultWidgetContent">
+      </ng-container>
+
+      <ng-template #defaultWidgetContent>
+        <div class="sky-condition">{{ state.data.skyCondition === 'sunny' ? '☀️' : '☁️' }}</div>
+        <div class="temperature">{{state.data.temperature}}°C</div>
+      </ng-template>
     </div>
     <div class="widget-actions">
-      <button (click)="actions.reload()">Reload</button>
-      <button (click)="actions.copyData()">Copy Info</button>
+      <ng-container 
+        [ngTemplateOutlet]="actionsTemplate || defaultWidgetActions"
+        [ngTemplateOutletInjector]="injector"
+      ></ng-container>
+
+      <ng-template #defaultWidgetActions>
+        <button (click)="actions.reload()">Reload</button>
+        <button (click)="actions.copyData()">Copy Info</button>
+      </ng-template>
     </div>
   `,
   styleUrls: ['./weather-widget.component.css'],
@@ -32,8 +46,16 @@ export class WeatherWidgetComponent {
   
   state = inject(WidgetState);
   actions = inject(WidgetActions);
+  injector = inject(Injector);
 
   @Input()
-  headerTemplate?: TemplateRef<any>
+  headerTemplate?: TemplateRef<any>;
+
+  @Input()
+  contentTemplate?: TemplateRef<WidgetState>;
+
+  @Input()
+  actionsTemplate?: TemplateRef<WidgetState>;
+
 
 }
