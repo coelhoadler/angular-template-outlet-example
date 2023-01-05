@@ -1,14 +1,20 @@
-import { Component, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common'; 
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, Input, NO_ERRORS_SCHEMA, TemplateRef } from '@angular/core';
 import { WidgetActions } from '../widget-actions.service';
 import { WidgetState } from '../widget-state.service';
 
 @Component({
   selector: 'weather-widget',
   standalone: true,
+  imports: [NgTemplateOutlet],
   template: `
     <div class="widget-header">
-      <div class="widget-title">Weather Forecast</div>
-      <div class="widget-sub-title">Current weather in your location</div>
+      <ng-container *ngTemplateOutlet="headerTemplate || defaultWidgetHeader"></ng-container>
+      
+      <ng-template #defaultWidgetHeader>
+        <div class="widget-title">Weather Forecast</div>
+        <div class="widget-sub-title">Current weather in your location</div>
+      </ng-template>
     </div>
     <div class="widget-content">
       <div class="sky-condition">{{ state.data.skyCondition === 'sunny' ? '☀️' : '☁️' }}</div>
@@ -20,9 +26,14 @@ import { WidgetState } from '../widget-state.service';
     </div>
   `,
   styleUrls: ['./weather-widget.component.css'],
-  providers: [WidgetActions, WidgetState]
+  providers: [WidgetActions, WidgetState],
 })
 export class WeatherWidgetComponent {
+  
   state = inject(WidgetState);
   actions = inject(WidgetActions);
+
+  @Input()
+  headerTemplate?: TemplateRef<any>
+
 }
